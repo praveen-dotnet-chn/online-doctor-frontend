@@ -1,8 +1,11 @@
-// components/register-form.jsx
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Button } from "@/components/ui/button";
+import api from "@/api";
+import { AuthContext } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldContent } from "@/components/ui/field";
+
 
 export function RegisterForm() {
   const [form, setForm] = useState({
@@ -14,12 +17,50 @@ export function RegisterForm() {
     dateOfBirth: "",
   });
 
-  const handleChange = (key, value) => {
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleChange = (key, value) =>
     setForm({ ...form, [key]: value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await api.post("/api/auth/register", form);
+      const { token, role } = res.data;
+
+      login(token, role);
+
+      if (role === "patient") navigate("/patient");
+      else if (role === "doctor") navigate("/doctor");
+      else navigate("/admin");
+    } catch (err) {
+  console.error("REGISTER ERROR:", err);
+
+  if (err.response) {
+    const backend = err.response.data;
+
+    // Backend message (preferred)
+    if (backend?.message) {
+      alert(backend.message);
+      return;
+    }
+
+    // fallback error cases
+    if (err.response.status === 400) alert("Invalid data. Please check all fields.");
+    else if (err.response.status === 409) alert("Email already exists.");
+    else if (err.response.status === 500) alert("Server error. Please try again later.");
+    else alert("Registration failed. Please try again.");
+  } else {
+    alert("Cannot connect to server. Check if backend is running.");
+  }
+}
+
   };
 
   return (
-    <form className="space-y-5">
+    <form className="space-y-5" onSubmit={handleSubmit}>
       {/* Email */}
       <Field>
         <FieldLabel>Email</FieldLabel>
