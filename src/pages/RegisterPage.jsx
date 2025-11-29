@@ -1,5 +1,5 @@
 // pages/RegisterPage.jsx
-import { RegisterForm } from "@/components/register-form";
+import { RegisterForm } from "@/components/RegisterForm";
 import { Separator } from "@/components/ui/separator";
 
 export default function RegisterPage() {

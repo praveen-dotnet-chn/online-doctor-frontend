@@ -1,5 +1,5 @@
 // pages/LoginPage.jsx
-import { LoginForm } from "@/components/login-form";
+import { LoginForm } from "@/components/LoginForm";
 import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage() {

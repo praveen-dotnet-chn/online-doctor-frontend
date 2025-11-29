@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { Button } from "@/components/ui/button";
-import api from "@/api";
+import api from "@/api/api";
 import { AuthContext } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -14,35 +14,32 @@ export function LoginForm() {
     e.preventDefault();
 
     try {
-  const res = await api.post("/api/auth/login", {
-    Email: email,
-    Password: password,
-  });
+      // 1 Send login request (cookie will be set)
+      await api.post("/api/auth/login", { Email: email, Password: password });
 
-  const { token, role } = res.data;
+      // 2 Call /me to get user info
+      const res = await api.get("/api/auth/me", { withCredentials: true });
+      const userInfo = res.data;
 
-  login(token, role);
+      // 3 Set user in context
+      login(userInfo);
 
-  if (role === "patient") navigate("/patient");
-  else if (role === "doctor") navigate("/doctor");
-  else navigate("/admin");
-} catch (err) {
-  console.error("LOGIN ERROR:", err);
-
-  if (err.response) {
-    console.error(err.response.data);
-
-    alert(
-      err.response.data.message ||
-      err.response.data.error ||
-      `Login failed (status ${err.response.status})`
-    );
-  } else {
-    alert("Server unreachable");
-  }
-}
+      // 4 Navigate based on role
+      if (userInfo.role === "patient") navigate("/patient");
+      else if (userInfo.role === "doctor") navigate("/doctor");
+      else navigate("/admin");
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      if (err.response) {
+        alert(
+          err.response.data.message ||
+            `Login failed (status ${err.response.status})`
+        );
+      } else {
+        alert("Server unreachable");
+      }
+    }
   };
-
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
