@@ -24,16 +24,15 @@ export function RegisterForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { token, role } = await AuthService.register(form);
+      const user = await AuthService.register(form); // user object from backend
+      login(user); // store user in context (cookie already has JWT)
 
-      login(token, role);
-
-      if (role === "patient") navigate("/patient");
-      else if (role === "doctor") navigate("/doctor");
+      // redirect based on role
+      if (user.role === "patient") navigate("/patient");
+      else if (user.role === "doctor") navigate("/doctor");
       else navigate("/admin");
     } catch (err) {
       console.error("REGISTER ERROR:", err);
-
       if (err.response) {
         alert(
           err.response.data.message ||

@@ -10,10 +10,10 @@ export default function RegisterPage() {
         style={{ backgroundImage: "url('public/images/login-poster.webp')" }}
       ></div>
 
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-gray-50">
+      <div className="flex w-full lg:w-1/2 items-center justify-center px-4 sm:px-6 md:px-8">
         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
           <h2 className="text-2xl font-bold text-center text-gray-900">
-            Create Patient Account
+            Patient Register
           </h2>
           <RegisterForm />
         </div>
