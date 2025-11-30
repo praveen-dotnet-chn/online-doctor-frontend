@@ -37,11 +37,20 @@ import { StatusBadge } from "../components/shared/StatusBadge";
 import { UserAvatar } from "../components/shared/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { useTable } from "../hooks/useTable";
-import { doctorsData } from "../data/mockData";
+// import { doctorsData } from "../data/mockData";
+import useDoctors from "../hooks/useDoctors";
 import { getUniqueValues } from "../utils/tableHelpers";
 import { USER_ROLES } from "../utils/constants";
 
+
 function PatientDashboard({ currentRole, onRoleChange }) {
+  
+const { doctors, loading, fetchDoctors } = useDoctors();
+
+React.useEffect(() => {
+  fetchDoctors();
+}, []);
+
   const {
     data,
     totalItems,
@@ -55,18 +64,18 @@ function PatientDashboard({ currentRole, onRoleChange }) {
     totalPages,
     itemsPerPage,
     handlePageChange,
-  } = useTable(doctorsData, {
+  } = useTable(doctors, {
     searchFields: ["name", "specialization"],
     filterFields: ["status", "specialization"],
   });
 
-  const specializations = getUniqueValues(doctorsData, "specialization");
+  const specializations = getUniqueValues(doctors, "specialization");
 
   const stats = [
-    { label: "Total Doctors", value: doctorsData.length },
+    { label: "Total Doctors", value: doctors.length },
     {
       label: "Available Now",
-      value: doctorsData.filter((d) => d.status === "available").length,
+      value: doctors.filter((d) => d.status === "available").length,
       color: "text-green-600",
     },
     { label: "This Week", value: "12" },

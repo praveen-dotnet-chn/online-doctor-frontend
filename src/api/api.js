@@ -10,4 +10,9 @@ const api = axios.create({
   withCredentials: true, // required for cookies
 });
 
+export async function fetchDoctorsAPI() {
+  const res = await api.get("/api/Doctors");
+  return res.data;
+}
+
 export default api;
