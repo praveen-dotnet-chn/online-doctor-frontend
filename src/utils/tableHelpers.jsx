@@ -64,10 +64,10 @@ export const getUniqueValues = (data, field) => {
 /**
  * Get initials from name
  */
-export const getInitials = (name) => {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase();
+export const getInitials = (user) => {
+  if (!user) return "U";
+  if (user.firstName && user.lastName)
+    return user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase();
+  if (user.email) return user.email[0].toUpperCase();
+  return "";
 };
