@@ -71,16 +71,10 @@ React.useEffect(() => {
 
   const specializations = getUniqueValues(doctors, "specialization");
 
-  const stats = [
-    { label: "Total Doctors", value: doctors.length },
-    {
-      label: "Available Now",
-      value: doctors.filter((d) => d.status === "available").length,
-      color: "text-green-600",
-    },
-    { label: "This Week", value: "12" },
-    { label: "Pending", value: "4", color: "text-yellow-600" },
-  ];
+ const stats = [
+  { label: "Total Doctors", value: doctors.length }
+];
+
 
   const filterOptions = [
     {
@@ -91,82 +85,25 @@ React.useEffect(() => {
       showIcon: true,
       options: specializations.map((spec) => ({ value: spec, label: spec })),
     },
-    {
-      label: "Status",
-      placeholder: "Status",
-      value: filters.status || "all",
-      onChange: (value) => handleFilter("status", value),
-      showIcon: false,
-      options: [
-        { value: "available", label: "Available" },
-        { value: "busy", label: "Busy" },
-        { value: "offline", label: "Offline" },
-      ],
-    },
   ];
 
   const columns = [
-    { key: "name", label: "Doctor", sortable: true, sticky: true },
-    {
-      key: "specialization",
-      label: "Specialization",
-      sortable: true,
-      className: "whitespace-nowrap",
-    },
-    { key: "experience", label: "Experience", sortable: true },
-    { key: "status", label: "Status", sortable: false },
-    { key: "rating", label: "Rating", sortable: true },
-    {
-      key: "nextAvailable",
-      label: "Next Available",
-      sortable: false,
-      className: "whitespace-nowrap",
-    },
-    {
-      key: "action",
-      label: "Action",
-      sortable: false,
-      className: "text-right",
-    },
-  ];
+  { key: "name", label: "Doctor", sortable: true, sticky: true },
+  { key: "specialization", label: "Specialization", sortable: true },
+  { key: "experience", label: "Experience (Years)", sortable: true },
+];
 
-  const renderRow = (doctor) => (
-    <tr key={doctor.id} className="hover:bg-gray-50">
-      <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
-        <div className="flex items-center">
-          <UserAvatar name={doctor.name} image={doctor.avatar} />
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">{doctor.name}</p>
-            <p className="text-xs text-gray-500">
-              {doctor.consultations} consultations
-            </p>
-          </div>
-        </div>
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-900 whitespace-nowrap">
-        {doctor.specialization}
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-900">
-        {doctor.experience} years
-      </td>
-      <td className="px-4 py-4">
-        <StatusBadge status={doctor.status} />
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-900">⭐ {doctor.rating}</td>
-      <td className="px-4 py-4 text-sm text-gray-900 whitespace-nowrap">
-        {doctor.nextAvailable}
-      </td>
-      <td className="px-4 py-4 text-right">
-        <Button
-          size="sm"
-          disabled={doctor.status !== "available"}
-          className="whitespace-nowrap"
-        >
-          Book Now
-        </Button>
-      </td>
-    </tr>
-  );
+
+const renderRow = (doctor) => (
+  <tr key={doctor.id} className="hover:bg-gray-50">
+    <td className="sticky left-0 z-10 bg-white px-4 py-4">
+      {doctor.name}
+    </td>
+    <td className="px-4 py-4">{doctor.specialization}</td>
+    <td className="px-4 py-4">{doctor.experience} years</td>
+  </tr>
+);
+
 
   return (
     <DashboardLayout

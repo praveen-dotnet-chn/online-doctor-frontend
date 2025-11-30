@@ -10,19 +10,12 @@ export default function useDoctors() {
     try {
       const data = await fetchDoctorsAPI();
 
-      // 🔥 Normalize backend data → frontend format
-      const normalized = data.map((d, index) => ({
+      // Normalize to only fields that exist in backend
+      const normalized = data.map((d) => ({
         id: d.userId,
         name: `${d.firstName} ${d.lastName}`,
         specialization: d.specialization,
-        experience: d.experience,
-
-        // default values for UI fields
-        status: "available",          
-        rating: 4.5,                  
-        consultations: Math.floor(Math.random() * 1500),  
-        nextAvailable: "10:00 AM",
-        avatar: null,
+        experience: d.experience
       }));
 
       setDoctors(normalized);
