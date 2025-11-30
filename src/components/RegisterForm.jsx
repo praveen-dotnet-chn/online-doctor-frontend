@@ -5,7 +5,7 @@ import api from "@/api/api";
 import { AuthContext } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "@/api/AuthService";
-
+import { Spinner } from "@/components/ui/spinner";
 export function RegisterForm() {
   const [form, setForm] = useState({
     firstName: "",
@@ -15,7 +15,7 @@ export function RegisterForm() {
     password: "",
     dateOfBirth: "",
   });
-
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -23,6 +23,7 @@ export function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const user = await AuthService.register(form); // user object from backend
       login(user); // store user in context (cookie already has JWT)
@@ -42,6 +43,8 @@ export function RegisterForm() {
       } else {
         alert("Server unreachable");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,8 +134,15 @@ export function RegisterForm() {
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        Create Account
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? (
+          <>
+            <Spinner size="sm" />
+            Signing In...
+          </>
+        ) : (
+          "Create Account"
+        )}
       </Button>
 
       <p className="text-center text-sm text-gray-500">

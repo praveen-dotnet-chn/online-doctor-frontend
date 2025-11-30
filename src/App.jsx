@@ -5,55 +5,67 @@ import PatientDashboard from "./pages/PatientDashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AuthProvider from "./context/AuthContext";
+import AuthProvider, { AuthContext } from "./context/AuthContext";
 import GuestRoute from "@/components/routes/GuestRoute";
-function App() {
+import FullPageLoader from "@/components/ui/full-page-loader";
+import { useContext } from "react";
+
+function AppContent() {
+  const { loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <FullPageLoader />; // <-- Full screen loading BEFORE routing renders
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        }
+      />
+
+      <Route path="/register" element={<RegisterPage />} />
+
+      <Route
+        path="/patient"
+        element={
+          <ProtectedRoute roles={["patient"]}>
+            <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/doctor"
+        element={
+          <ProtectedRoute roles={["doctor"]}>
+            <DoctorDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute roles={["admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
+
+export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route
-            path="/"
-            element={
-              <GuestRoute>
-                <LoginPage />
-              </GuestRoute>
-            }
-          />
-          <Route path="/register" element={<RegisterPage />} />
-
-          {/* Protected Routes */}
-          <Route
-            path="/patient"
-            element={
-              <ProtectedRoute roles={["patient"]}>
-                <PatientDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/doctor"
-            element={
-              <ProtectedRoute roles={["doctor"]}>
-                <DoctorDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute roles={["admin"]}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <AppContent />
       </BrowserRouter>
     </AuthProvider>
   );
 }
-
-export default App;
