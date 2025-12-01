@@ -1,56 +1,55 @@
-// import Sidebar from "@/components/layout/Sidebar";
-// import Header from "@/components/layout/Header";
-// import DoctorTable from "@/components/ui/DoctorTable";
-// import SearchBar from "@/components/ui/SearchBar";
-// import { doctorsData } from "@/data/doctors";
-// import { useState } from "react";
-
-// export default function PatientDashboard() {
-//   const [search, setSearch] = useState("");
-
-//   const filtered = doctorsData.filter((d) =>
-//     d.name.toLowerCase().includes(search.toLowerCase())
-//   );
-
-//   return (
-//     <div className="flex">
-//       <Sidebar />
-
-//       <main className="flex-1 bg-gray-50 min-h-screen">
-//         <Header user="John" />
-
-//         <div className="p-6">
-//           <SearchBar value={search} onChange={setSearch} />
-
-//           <DoctorTable doctors={filtered} />
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
 import React from "react";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { StatsCards } from "../components/dashboard/StatsCards";
 import { FilterBar } from "../components/dashboard/FilterBar";
 import { DataTable } from "../components/dashboard/DataTable";
-import { StatusBadge } from "../components/shared/StatusBadge";
 import { UserAvatar } from "../components/shared/UserAvatar";
 import { Button } from "@/components/ui/button";
+import { DoctorProfileDialog } from "../components/booking/DoctorProfileDialog";
+import { ReasonDialog } from "../components/booking/ReasonDialog";
 import { useTable } from "../hooks/useTable";
-// import { doctorsData } from "../data/mockData";
 import useDoctors from "../hooks/useDoctors";
+import { Toast } from "../components/shared/Toast";
+import { useBooking } from "../hooks/useBooking";
+import useSlots from "../hooks/useSlots";
+
 import { getUniqueValues } from "../utils/tableHelpers";
-import { USER_ROLES } from "../utils/constants";
 
+export default function PatientDashboard({ currentRole, onRoleChange }) {
+  const { doctors, loading, fetchDoctors } = useDoctors();
+  const { slots, loadingSlots, fetchSlots } = useSlots();
 
-function PatientDashboard({ currentRole, onRoleChange }) {
-  
-const { doctors, loading, fetchDoctors } = useDoctors();
+  const {
+    bookingStep,
+    selectedDoctor,
+    selectedSlot,
+    bookingReason,
+    showToast,
+    toastMessage,
+    startBooking,
+    selectSlot,
+    confirmSlot,
+    updateReason,
+    confirmBooking,
+    resetBooking,
+    closeToast,
+  } = useBooking();
 
-React.useEffect(() => {
-  fetchDoctors();
-}, []);
+  // fetch Doctors details
+  React.useEffect(() => {
+    fetchDoctors();
+  }, []);
 
+  // fetch Availability Slots for all doctors
+  React.useEffect(() => {
+    fetchDoctors();
+    fetchSlots();
+  }, []);
+  const combinedDoctors = doctors.map((doc) => ({
+    ...doc,
+    availableSlots: slots.filter((s) => s.doctorId === doc.id),
+  }));
+  // useTable now works with DB doctors
   const {
     data,
     totalItems,
@@ -64,18 +63,16 @@ React.useEffect(() => {
     totalPages,
     itemsPerPage,
     handlePageChange,
-  } = useTable(doctors, {
+  } = useTable(combinedDoctors, {
     searchFields: ["name", "specialization"],
-    filterFields: ["status", "specialization"],
+    filterFields: ["specialization"], // ✔ removed status filter
   });
 
   const specializations = getUniqueValues(doctors, "specialization");
 
- const stats = [
-  { label: "Total Doctors", value: doctors.length }
-];
+  const stats = [{ label: "Total Doctors", value: doctors.length }];
 
-
+  //  only specialization filter now
   const filterOptions = [
     {
       label: "Specializations",
@@ -87,23 +84,45 @@ React.useEffect(() => {
     },
   ];
 
+  //  Removed status / rating / nextAvailable
   const columns = [
-  { key: "name", label: "Doctor", sortable: true, sticky: true },
-  { key: "specialization", label: "Specialization", sortable: true },
-  { key: "experience", label: "Experience (Years)", sortable: true },
-];
+    { key: "name", label: "Doctor", sortable: true, sticky: true },
+    { key: "specialization", label: "Specialization", sortable: true },
+    { key: "experience", label: "Experience", sortable: true },
+    {
+      key: "action",
+      label: "Action",
+      sortable: false,
+      className: "text-right",
+    },
+  ];
 
+  //  DB-friendly row rendering
+  const renderRow = (doctor) => (
+    <tr key={doctor.id} className="hover:bg-gray-50">
+      <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          <UserAvatar name={doctor.name} />
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-900">{doctor.name}</p>
+          </div>
+        </div>
+      </td>
 
-const renderRow = (doctor) => (
-  <tr key={doctor.id} className="hover:bg-gray-50">
-    <td className="sticky left-0 z-10 bg-white px-4 py-4">
-      {doctor.name}
-    </td>
-    <td className="px-4 py-4">{doctor.specialization}</td>
-    <td className="px-4 py-4">{doctor.experience} years</td>
-  </tr>
-);
+      <td className="px-4 py-4 text-sm text-gray-900">
+        {doctor.specialization}
+      </td>
 
+      <td className="px-4 py-4 text-sm text-gray-900">
+        {doctor.experience} years
+      </td>
+      <td className="px-4 py-4 text-right">
+        <Button size="sm" onClick={() => startBooking(doctor)}>
+          Book Now
+        </Button>
+      </td>
+    </tr>
+  );
 
   return (
     <DashboardLayout
@@ -133,7 +152,27 @@ const renderRow = (doctor) => (
         onPageChange={handlePageChange}
         renderRow={renderRow}
       />
+      {/* Doctor Profile Dialog */}
+      <DoctorProfileDialog
+        isOpen={bookingStep === "profile"}
+        onClose={resetBooking}
+        doctor={selectedDoctor}
+        selectedSlot={selectedSlot}
+        onSlotSelect={selectSlot}
+        onConfirm={confirmSlot}
+      />
+      {/* Reason Dialog */}
+      <ReasonDialog
+        isOpen={bookingStep === "reason"}
+        onClose={resetBooking}
+        doctor={selectedDoctor}
+        selectedSlot={selectedSlot}
+        reason={bookingReason}
+        onReasonChange={updateReason}
+        onConfirm={confirmBooking}
+      />
+      {/* Toast */}
+      <Toast message={toastMessage} show={showToast} onClose={closeToast} />
     </DashboardLayout>
   );
 }
-export default PatientDashboard;

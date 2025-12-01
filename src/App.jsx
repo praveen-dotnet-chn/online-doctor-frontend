@@ -69,3 +69,46 @@ export default function App() {
     </AuthProvider>
   );
 }
+// src/App.jsx
+
+// import React, { useState } from "react";
+// import PatientDashboard from "./pages/PatientDashboard";
+// import DoctorDashboard from "./pages/DoctorDashboard";
+// import AdminDashboard from "./pages/AdminDashboard";
+// import { USER_ROLES } from "./utils/constants";
+
+// function App() {
+//   const [currentRole, setCurrentRole] = useState(USER_ROLES.PATIENT);
+
+//   const renderDashboard = () => {
+//     switch (currentRole) {
+//       case USER_ROLES.PATIENT:
+//         return (
+//           <PatientDashboard
+//             currentRole={currentRole}
+//             onRoleChange={setCurrentRole}
+//           />
+//         );
+//       case USER_ROLES.DOCTOR:
+//         return (
+//           <DoctorDashboard
+//             currentRole={currentRole}
+//             onRoleChange={setCurrentRole}
+//           />
+//         );
+//       case USER_ROLES.ADMIN:
+//         return (
+//           <AdminDashboard
+//             currentRole={currentRole}
+//             onRoleChange={setCurrentRole}
+//           />
+//         );
+//       default:
+//         return null;
+//     }
+//   };
+
+//   return <div className="App">{renderDashboard()}</div>;
+// }
+
+// export default App;
