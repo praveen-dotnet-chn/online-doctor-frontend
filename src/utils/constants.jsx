@@ -27,11 +27,11 @@ export const ITEMS_PER_PAGE = 5;
 
 export const SIDEBAR_ITEMS = {
   [USER_ROLES.PATIENT]: [
-    { icon: "Home", label: "Dashboard", path: "/dashboard" },
-    { icon: "Calendar", label: "My Appointments", path: "/appointments" },
+    { icon: "Home", label: "Dashboard", path: "/patient" },
+    { icon: "Calendar", label: "My Appointments", path: "/my-appointments" },
     { icon: "FileText", label: "Medical Records", path: "/records" },
     { icon: "User", label: "Profile", path: "/profile" },
-    { icon: "Settings", label: "Settings", path: "/settings" },
+    // { icon: "Settings", label: "Settings", path: "/settings" },
   ],
   [USER_ROLES.DOCTOR]: [
     { icon: "Home", label: "Dashboard", path: "/dashboard" },
