@@ -2,7 +2,7 @@
 // src/api/api.js
 import axios from "axios";
 //create a .env file in the root directory and add VITE_API_URL=http://your-api-url
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:5288";
+const BASE = "http://localhost:5013";
 
 const api = axios.create({
   baseURL: BASE,

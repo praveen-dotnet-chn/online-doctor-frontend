@@ -10,9 +10,27 @@ import { StatusBadge } from "../components/shared/StatusBadge";
 import { UserAvatar } from "../components/shared/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { useTable } from "../hooks/useTable";
-import { appointmentsData } from "../data/mockData";
+// import { appointmentsData } from "../data/mockData";
+import useDoctorAppointments from "../hooks/useDoctorAppointments";
+
+const Loader = () => (
+  <div className="w-full py-20 flex justify-center items-center">
+    <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+  </div>
+);
+
 
 function DoctorDashboard({ currentRole, onRoleChange }) {
+
+  const doctorId = "398d74ab-6684-421b-a0ec-e7566decaf3c"; // temp, replace with real logged-in user
+
+  const { appointments, loading, fetchAppointments } = useDoctorAppointments();
+
+  React.useEffect(() => {
+    fetchAppointments(doctorId);
+  }, []);
+
+
   const {
     data,
     totalItems,
@@ -24,66 +42,59 @@ function DoctorDashboard({ currentRole, onRoleChange }) {
     totalPages,
     itemsPerPage,
     handlePageChange,
-  } = useTable(appointmentsData, {
+  } = useTable(appointments, {
     searchFields: ["patient", "doctor"],
   });
 
   const stats = [
-    { label: "Total Appointments", value: appointmentsData.length },
+    { label: "Total Appointments", value: appointments.length },
     {
       label: "Today",
-      value: appointmentsData.filter((a) => a.date === "2025-11-28").length,
+      value: appointments.filter((a) => a.date === "2025-11-28").length,
       color: "text-blue-600",
     },
     {
       label: "Completed",
-      value: appointmentsData.filter((a) => a.status === "completed").length,
+      value: appointments.filter((a) => a.status === "completed").length,
       color: "text-green-600",
     },
     {
       label: "Scheduled",
-      value: appointmentsData.filter((a) => a.status === "scheduled").length,
+      value: appointments.filter((a) => a.status === "scheduled").length,
       color: "text-yellow-600",
     },
   ];
 
-  const columns = [
-    { key: "patient", label: "Patient", sortable: true, sticky: true },
-    { key: "date", label: "Date", sortable: true },
-    { key: "time", label: "Time", sortable: true },
-    { key: "type", label: "Type", sortable: false },
-    { key: "status", label: "Status", sortable: false },
-    {
-      key: "action",
-      label: "Action",
-      sortable: false,
-      className: "text-right",
-    },
-  ];
+const columns = [
+  { key: "patient", label: "Patient", sortable: true, sticky: true },
+  { key: "date", label: "Date", sortable: true },
+  { key: "time", label: "Time", sortable: true },
+  { key: "status", label: "Status", sortable: false },
+  { key: "action", label: "Action", sortable: false, className: "text-right" },
+];
 
-  const renderRow = (appointment) => (
-    <tr key={appointment.id} className="hover:bg-gray-50">
-      <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
-        <div className="flex items-center">
-          <UserAvatar name={appointment.patient} />
-          <span className="ml-3 text-sm font-medium text-gray-900">
-            {appointment.patient}
-          </span>
-        </div>
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-900">{appointment.date}</td>
-      <td className="px-4 py-4 text-sm text-gray-900">{appointment.time}</td>
-      <td className="px-4 py-4 text-sm text-gray-900">{appointment.type}</td>
-      <td className="px-4 py-4">
-        <StatusBadge status={appointment.status} />
-      </td>
-      <td className="px-4 py-4 text-right">
-        <Button size="sm" variant="outline">
-          View Details
-        </Button>
-      </td>
-    </tr>
-  );
+const renderRow = (appointment) => (
+  <tr key={appointment.id} className="hover:bg-gray-50">
+    <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
+      <div className="flex items-center">
+        <UserAvatar name={appointment.patient} />
+        <span className="ml-3 text-sm font-medium text-gray-900">
+          {appointment.patient}
+        </span>
+      </div>
+    </td>
+
+    <td className="px-4 py-4">{appointment.date}</td>
+    <td className="px-4 py-4">{appointment.time}</td>
+    <td className="px-4 py-4">
+      <StatusBadge status={appointment.status} />
+    </td>
+    <td className="px-4 py-4 text-right">
+      <Button size="sm" variant="outline">View</Button>
+    </td>
+  </tr>
+);
+
 
   return (
     <DashboardLayout
@@ -92,6 +103,10 @@ function DoctorDashboard({ currentRole, onRoleChange }) {
       onRoleChange={onRoleChange}
       currentUser={{ name: "Dr. Sarah Johnson" }}
     >
+      {loading ? (
+      <Loader />
+    ) : (
+      <>
       <StatsCards stats={stats} />
 
       <FilterBar
@@ -112,6 +127,8 @@ function DoctorDashboard({ currentRole, onRoleChange }) {
         onPageChange={handlePageChange}
         renderRow={renderRow}
       />
+      </>
+      )}
     </DashboardLayout>
   );
 }
