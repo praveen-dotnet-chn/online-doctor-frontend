@@ -26,7 +26,7 @@ export const DoctorProfileDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95%] sm:w-full rounded-xl">
         <DialogHeader>
           <DialogTitle>Book Appointment</DialogTitle>
           <DialogDescription>Select an available time slot</DialogDescription>
@@ -52,16 +52,16 @@ export const DoctorProfileDialog = ({
                     </Badge>
                     <div className="flex items-center text-sm text-gray-600">
                       <Award className="w-4 h-4 mr-1" />
-                      {doctor.experience} years exp
+                      {doctor.experience ?? 10} years exp
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    {/* <div className="flex items-center text-sm text-gray-600">
                       <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
                       {doctor.rating} rating
-                    </div>
+                    </div> */}
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">
+                  {/* <p className="text-sm text-gray-500 mt-2">
                     {doctor.consultations} consultations completed
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </CardContent>

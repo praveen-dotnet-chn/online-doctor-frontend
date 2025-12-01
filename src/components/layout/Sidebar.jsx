@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Video, LogOut } from "lucide-react";
+import { X, Video, LogOut, Activity } from "lucide-react";
 import * as Icons from "lucide-react";
 import { UserAvatar } from "../shared/UserAvatar";
 import { SIDEBAR_ITEMS } from "../../utils/constants";
@@ -36,11 +36,12 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between h-16 px-6 border-b">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Video className="w-5 h-5 text-white" />
+                {/* <Video className="w-5 h-5 text-white"/> */}
+                <Activity className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-semibold text-gray-900">Doc2U</span>
             </div>
-            <button onClick={onClose} className="lg:hidden">
+            <button onClick={onClose} className="lg:hidden cursor-pointer">
               <X className="w-6 h-6" />
             </button>
           </div>
