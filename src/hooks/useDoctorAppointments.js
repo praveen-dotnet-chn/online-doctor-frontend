@@ -12,15 +12,38 @@ export default function useDoctorAppointments() {
     try {
       const res = await api.get(`/api/patient/appointments/doctor/${doctorId}`);
 
-      const normalized = res.data.map((a) => ({
+      const appointments = res.data;
+
+      // 1. Extract unique patientIds
+      const patientIds = [...new Set(appointments.map((a) => a.patientId))];
+
+      // 2. Fetch all patient details in parallel
+      const patientRequests = patientIds.map((id) =>
+        api.get(`/api/patients/${id}`)
+      );
+
+      const patientResponses = await Promise.all(patientRequests);
+
+      // 3. Create a lookup map: { patientId :: patientName }
+      const patientMap = {};
+      patientResponses.forEach((res) => {
+        const p = res.data;
+        patientMap[p.userId] = `${p.firstName} ${p.lastName}`;
+      });
+      console.log(patientMap);
+      // 4. Normalize data and replace patientId with name
+      const normalized = appointments.map((a) => ({
         id: a.appointmentId,
-        patient: a.patientId, // until patient API exists
+        patientId: a.patientId,
+        patient: patientMap[a.patientId] || "Unknown",
         date: a.startTime.split("T")[0],
-        time: a.startTime.split("T")[1].split(".")[0], // "10:45:16"
+        time: a.startTime.split("T")[1].split(".")[0],
         status: a.status,
       }));
 
       setAppointments(normalized);
+    } catch (err) {
+      console.error("Failed to fetch doctor appointments", err);
     } finally {
       setLoading(false);
     }

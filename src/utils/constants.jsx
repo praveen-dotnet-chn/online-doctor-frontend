@@ -34,14 +34,14 @@ export const SIDEBAR_ITEMS = {
     // { icon: "Settings", label: "Settings", path: "/settings" },
   ],
   [USER_ROLES.DOCTOR]: [
-    { icon: "Home", label: "Dashboard", path: "/dashboard" },
+    { icon: "Home", label: "Dashboard", path: "/doctor" },
     { icon: "Calendar", label: "Appointments", path: "/appointments" },
     { icon: "Users", label: "Patients", path: "/patients" },
     { icon: "FileText", label: "Prescriptions", path: "/prescriptions" },
     { icon: "Settings", label: "Settings", path: "/settings" },
   ],
   [USER_ROLES.ADMIN]: [
-    { icon: "Home", label: "Dashboard", path: "/dashboard" },
+    { icon: "Home", label: "Dashboard", path: "/admin" },
     { icon: "Users", label: "Manage Doctors", path: "/doctors" },
     { icon: "Users", label: "Manage Patients", path: "/patients" },
     { icon: "Calendar", label: "All Appointments", path: "/appointments" },
