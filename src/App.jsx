@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AuthProvider, { AuthContext } from "./context/AuthContext";
 import GuestRoute from "@/components/routes/GuestRoute";
 import FullPageLoader from "@/components/ui/full-page-loader";
+import { MyAppointments } from "./pages/MyAppointments";
 import { useContext } from "react";
 
 function AppContent() {
@@ -35,6 +36,14 @@ function AppContent() {
         element={
           <ProtectedRoute roles={["patient"]}>
             <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-appointments"
+        element={
+          <ProtectedRoute roles={["patient"]}>
+            <MyAppointments />
           </ProtectedRoute>
         }
       />
