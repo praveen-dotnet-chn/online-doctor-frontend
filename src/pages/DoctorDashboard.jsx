@@ -41,6 +41,8 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
     handleSearch,
     sortConfig,
     handleSort,
+    filters,
+    handleFilter,
     currentPage,
     totalPages,
     itemsPerPage,
@@ -66,6 +68,11 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
       value: appointments.filter((a) => a.status === "scheduled").length,
       color: "text-yellow-600",
     },
+    {
+      label: "Cancelled",
+      value: appointments.filter((a) => a.status === "cancelled").length,
+      color: "text-red-600",
+    },
   ];
 
   const columns = [
@@ -81,7 +88,19 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
       className: "text-right",
     },
   ];
-
+  const filterOptions = [
+    {
+      label: "Status",
+      placeholder: "Filter by Status",
+      value: filters.status || "all",
+      onChange: (value) => handleFilter("status", value),
+      options: [
+        { value: "scheduled", label: "Scheduled" },
+        { value: "completed", label: "Completed" },
+        { value: "cancelled", label: "Cancelled" },
+      ],
+    },
+  ];
   const renderRow = (appointment) => (
     <tr key={appointment.id} className="hover:bg-gray-50">
       <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
@@ -135,6 +154,7 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
               <FilterBar
                 searchQuery={searchQuery}
                 onSearchChange={handleSearch}
+                filters={filterOptions}
                 searchPlaceholder="Search appointments..."
               />
 
