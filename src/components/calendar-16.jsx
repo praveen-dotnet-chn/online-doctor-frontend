@@ -10,11 +10,18 @@ import api from "@/api/api";
 
 import { Spinner } from "@/components/ui/spinner";
 import { Toast } from "../components/shared/Toast";
+import SlotDialog from "./slots/SlotDialog";
 
 export default function Calendar16({ doctorId }) {
   const [date, setDate] = React.useState(new Date());
   const [loading, setLoading] = React.useState(false);
   const [toast, setToast] = React.useState({ show: false, message: "" });
+  const [showDialog, setShowDialog] = React.useState(false);
+  const [slots, setSlots] = React.useState([]);
+  const [slotsLoading, setSlotsLoading] = React.useState(false);
+
+  const openDialog = () => setShowDialog(true);
+  const closeDialog = () => setShowDialog(false);
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -56,6 +63,39 @@ export default function Calendar16({ doctorId }) {
       setToast({ show: true, message: "Failed to create slot", type: "error" });
     } finally {
       setLoading(false);
+    }
+  };
+  const fetchSlotsForDate = async () => {
+    if (!date) {
+      alert("Please select a date");
+      return;
+    }
+    const isoDate = date.toLocaleDateString("en-CA");
+    console.log(isoDate);
+
+    try {
+      setSlotsLoading(true);
+
+      const res = await api.get(`/api/availabilityslot/${doctorId}/${isoDate}`);
+
+      setSlots(res.data);
+      setShowDialog(true);
+    } catch (err) {
+      showToast("Failed to load slots", "error");
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  const handleDelete = async (slotId) => {
+    try {
+      await api.delete(`/api/availabilityslot/${slotId}`);
+      showToast("Slot deleted");
+
+      // reload inside dialog
+      fetchSlotsForDate();
+    } catch (err) {
+      showToast("Failed to delete slot", "error");
     }
   };
 
@@ -111,6 +151,13 @@ export default function Calendar16({ doctorId }) {
           >
             {loading ? <Spinner /> : "Confirm Slot"}
           </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={fetchSlotsForDate}
+          >
+            Show Slots
+          </Button>
         </CardFooter>
       </Card>
 
@@ -120,6 +167,18 @@ export default function Calendar16({ doctorId }) {
         show={toast.show}
         type={toast.type}
         onClose={() => setToast({ show: false, message: "" })}
+      />
+      <SlotDialog
+        open={showDialog}
+        onClose={closeDialog}
+        slots={slots}
+        onDeleteSlot={handleDelete}
+        formatTime={(x) =>
+          new Date(x).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        }
       />
     </>
   );

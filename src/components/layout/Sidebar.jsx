@@ -92,7 +92,7 @@ export const Sidebar = ({ isOpen, onClose, onNavigate }) => {
                 aria-label="Logout"
                 onClick={() => setIsLogoutOpen(true)}
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-5 h-5 cursor-pointer" />
               </button>
             </div>
           </div>
