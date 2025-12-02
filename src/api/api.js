@@ -16,9 +16,8 @@ export async function fetchDoctorsAPI() {
 }
 //This function Fetches all availability slots for doctors
 export async function fetchAvailabilitySlotsAPI() {
-  const res = await fetch("http://localhost:5186/api/availabilityslot/all");
-  if (!res.ok) throw new Error("Failed to fetch slots");
-  return res.json();
+  const res = await api.get("/api/AvailabilitySlot/all");
+  return res.data;
 }
 
 // Send prescription for an appointment

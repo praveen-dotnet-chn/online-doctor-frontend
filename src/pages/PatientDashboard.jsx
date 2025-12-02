@@ -12,7 +12,6 @@ import useDoctors from "../hooks/useDoctors";
 import { Toast } from "../components/shared/Toast";
 import { useBooking } from "../hooks/useBooking";
 import useSlots from "../hooks/useSlots";
-
 import { getUniqueValues } from "../utils/tableHelpers";
 
 export default function PatientDashboard({ currentRole, onRoleChange }) {
