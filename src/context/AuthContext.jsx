@@ -12,7 +12,7 @@ export default function AuthProvider({ children }) {
     async function checkAuth() {
       try {
         const res = await api.get("/api/auth/me"); // you will create this endpoint
-        setUser(res.data); // { email, role, firstName, ... }
+        setUser(res.data); // { email, role, firstName, id, ... }
       } catch {
         setUser(null);
       } finally {

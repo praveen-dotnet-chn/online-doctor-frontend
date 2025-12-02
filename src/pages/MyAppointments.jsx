@@ -1,6 +1,4 @@
-// src/pages/MyAppointments.jsx
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { StatsCards } from "../components/dashboard/StatsCards";
 import { FilterBar } from "../components/dashboard/FilterBar";
@@ -12,17 +10,85 @@ import { CancelAppointmentDialog } from "../components/appointments/CancelAppoin
 import { PrescriptionDialog } from "../components/appointments/PrescriptionDialog";
 import { Button } from "@/components/ui/button";
 import { useTable } from "../hooks/useTable";
-import { patientAppointmentsData } from "../data/mockData";
+import api from "@/api/api";
 import { Video, FileText, X } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import FullPageLoader from "@/components/ui/full-page-loader";
 
 export const MyAppointments = ({ currentRole, onRoleChange }) => {
-  const [appointments, setAppointments] = useState(patientAppointmentsData);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPrescriptionDialog, setShowPrescriptionDialog] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const [toast, setToast] = React.useState({ show: false, message: "" });
+  const { user } = useAuth();
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
 
+  const patientId = user?.userId;
+  // console.log("Patient ID:", patientId);
+  useEffect(() => {
+    async function loadAppointments() {
+      try {
+        // 1. Fetch appointment list
+        const res = await api.get(
+          `/api/patient/appointments/patient/${patientId}`
+        );
+        const appts = res.data;
+        // console.log("Fetched Appointments:", appts);
+        // 2. Fetch doctor info for each appointment
+        const mapped = await Promise.all(
+          appts.map(async (apt) => {
+            const doc = await api.get(`/api/doctors/${apt.doctorId}`);
+            const doctor = doc.data;
+
+            return {
+              id: apt.appointmentId,
+              doctorId: apt.doctorId,
+              doctorName: `${doctor.firstName} ${doctor.lastName}`,
+              doctorAvatar: null,
+              specialization: doctor.specialization,
+              experience: doctor.experience,
+              appointmentDate: new Date(apt.startTime).toLocaleDateString(),
+              appointmentTime: `${new Date(apt.startTime).toLocaleTimeString(
+                [],
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              )} - ${new Date(apt.endTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}`,
+              status: apt.status,
+              videoLink:
+                apt.status === "scheduled"
+                  ? "https://meet.google.com/xyz"
+                  : null,
+              prescriptionAvailable: apt.status === "completed",
+            };
+          })
+        );
+
+        setAppointments(mapped);
+      } catch (err) {
+        console.error(err);
+
+        showToast("Failed to load appointments", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadAppointments();
+  }, []);
+
+  // =========================================================
+  // Table & UI handlers
+  // =========================================================
   const {
     data,
     totalItems,
@@ -66,7 +132,6 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
       placeholder: "Filter by Status",
       value: filters.status || "all",
       onChange: (value) => handleFilter("status", value),
-      showIcon: false,
       options: [
         { value: "scheduled", label: "Scheduled" },
         { value: "completed", label: "Completed" },
@@ -75,32 +140,9 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
     },
   ];
 
-  const columns = [
-    { key: "doctor", label: "Doctor", sortable: true, sticky: true },
-    {
-      key: "specialization",
-      label: "Specialization",
-      sortable: true,
-      className: "whitespace-nowrap",
-    },
-    { key: "experience", label: "Experience", sortable: true },
-    {
-      key: "date",
-      label: "Date & Time",
-      sortable: true,
-      className: "whitespace-nowrap",
-    },
-    { key: "status", label: "Status", sortable: false },
-    { key: "videoLink", label: "Video Link", sortable: false },
-    { key: "prescription", label: "Prescription", sortable: false },
-    {
-      key: "action",
-      label: "Action",
-      sortable: false,
-      className: "text-right",
-    },
-  ];
-
+  // =========================================================
+  // Cancel & Prescription handlers
+  // =========================================================
   const handleCancelClick = (appointment) => {
     setSelectedAppointment(appointment);
     setShowCancelDialog(true);
@@ -112,9 +154,9 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
         apt.id === appointmentId ? { ...apt, status: "cancelled" } : apt
       )
     );
+
     setShowCancelDialog(false);
-    setToastMessage("Appointment cancelled successfully");
-    setShowToast(true);
+    showToast("Appointment cancelled successfully", "success");
   };
 
   const handleViewPrescription = (appointment) => {
@@ -126,6 +168,9 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
     window.open(videoLink, "_blank");
   };
 
+  // =========================================================
+  // Row Renderer
+  // =========================================================
   const renderRow = (appointment) => (
     <tr key={appointment.id} className="hover:bg-gray-50">
       <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
@@ -135,77 +180,74 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
             image={appointment.doctorAvatar}
           />
           <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">
-              {appointment.doctorName}
-            </p>
+            <p className="text-sm font-medium">{appointment.doctorName}</p>
             <p className="text-xs text-gray-500">
               {appointment.specialization}
             </p>
           </div>
         </div>
       </td>
-      <td className="px-4 py-4 text-sm text-gray-900 whitespace-nowrap">
-        {appointment.specialization}
+
+      <td className="px-4 py-4">{appointment.specialization}</td>
+      <td className="px-4 py-4">{appointment.experience} yrs</td>
+
+      <td className="px-4 py-4 whitespace-nowrap">
+        <p className="font-medium">{appointment.appointmentDate}</p>
+        <p className="text-gray-500">{appointment.appointmentTime}</p>
       </td>
-      <td className="px-4 py-4 text-sm text-gray-900">
-        {appointment.experience} years
-      </td>
-      <td className="px-4 py-4 text-sm text-gray-900 whitespace-nowrap">
-        <div>
-          <p className="font-medium">{appointment.appointmentDate}</p>
-          <p className="text-gray-500">{appointment.appointmentTime}</p>
-        </div>
-      </td>
+
       <td className="px-4 py-4">
         <StatusBadge status={appointment.status} />
       </td>
+
       <td className="px-4 py-4">
-        {appointment.videoLink && appointment.status === "scheduled" ? (
+        {appointment.status === "scheduled" ? (
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleJoinVideo(appointment.videoLink)}
-            className="whitespace-nowrap"
           >
             <Video className="w-4 h-4 mr-2" />
             Join Call
           </Button>
         ) : (
-          <span className="text-sm text-gray-400">-</span>
+          <span className="text-gray-400">-</span>
         )}
       </td>
+
       <td className="px-4 py-4">
         {appointment.prescriptionAvailable ? (
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleViewPrescription(appointment)}
-            className="whitespace-nowrap"
           >
             <FileText className="w-4 h-4 mr-2" />
             View
           </Button>
         ) : (
-          <span className="text-sm text-gray-400">Not available</span>
+          <span className="text-gray-400">Not available</span>
         )}
       </td>
+
       <td className="px-4 py-4 text-right">
         {appointment.status === "scheduled" ? (
           <Button
             size="sm"
             variant="destructive"
             onClick={() => handleCancelClick(appointment)}
-            className="whitespace-nowrap"
           >
             <X className="w-4 h-4 mr-2" />
             Cancel
           </Button>
         ) : (
-          <span className="text-sm text-gray-400">-</span>
+          <span className="text-gray-400">-</span>
         )}
       </td>
     </tr>
   );
+
+  if (loading) return <FullPageLoader />;
 
   return (
     <DashboardLayout
@@ -224,7 +266,16 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
       />
 
       <DataTable
-        columns={columns}
+        columns={[
+          { key: "doctor", label: "Doctor", sortable: true, sticky: true },
+          { key: "specialization", sortable: true, label: "Specialization" },
+          { key: "experience", sortable: true, label: "Experience" },
+          { key: "date", label: "Date & Time" },
+          { key: "status", label: "Status" },
+          { key: "videoLink", label: "Video Link" },
+          { key: "prescription", label: "Prescription" },
+          { key: "action", label: "Action", className: "text-right" },
+        ]}
         data={data}
         onSort={handleSort}
         sortConfig={sortConfig}
@@ -236,7 +287,6 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
         renderRow={renderRow}
       />
 
-      {/* Cancel Appointment Dialog */}
       <CancelAppointmentDialog
         isOpen={showCancelDialog}
         onClose={() => setShowCancelDialog(false)}
@@ -244,18 +294,17 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
         onConfirm={handleConfirmCancel}
       />
 
-      {/* Prescription Dialog */}
       <PrescriptionDialog
         isOpen={showPrescriptionDialog}
         onClose={() => setShowPrescriptionDialog(false)}
         appointment={selectedAppointment}
       />
 
-      {/* Toast */}
       <Toast
-        message={toastMessage}
-        show={showToast}
-        onClose={() => setShowToast(false)}
+        message={toast.message}
+        show={toast.show}
+        type={toast.type}
+        onClose={() => setToast({ show: false, message: "", type: "success" })}
       />
     </DashboardLayout>
   );
