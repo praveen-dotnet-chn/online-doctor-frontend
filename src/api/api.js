@@ -21,4 +21,13 @@ export async function fetchAvailabilitySlotsAPI() {
   return res.json();
 }
 
+// Send prescription for an appointment
+export async function sendPrescriptionAPI(appointmentId, prescriptionText) {
+  const res = await api.post("/api/prescriptions", {
+    appointmentId,
+    prescription: prescriptionText,
+  });
+  return res.data;
+}
+
 export default api;

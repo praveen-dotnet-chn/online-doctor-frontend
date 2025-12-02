@@ -10,7 +10,7 @@ import FullPageLoader from "@/components/ui/full-page-loader";
 import { useTable } from "../hooks/useTable";
 import { useAuth } from "../context/AuthContext";
 import Calendar16 from "../components/calendar-16";
-
+import AppointmentDetailsDialog from "../components/booking/AppointmentDetailsDialog";
 // import { appointmentsData } from "../data/mockData";
 import useDoctorAppointments from "../hooks/useDoctorAppointments";
 
@@ -19,6 +19,14 @@ const Loader = () => <FullPageLoader />;
 export default function DoctorDashboard({ currentRole, onRoleChange }) {
   const { user } = useAuth();
   const doctorId = user?.userId; // temp, replace with real logged-in user
+  const [selectedAppointment, setSelectedAppointment] = React.useState(null);
+  const [showDialog, setShowDialog] = React.useState(false);
+  const [prescription, setPrescription] = React.useState("");
+  const openAppointment = (appt) => {
+    setSelectedAppointment(appt);
+    setPrescription("");
+    setShowDialog(true);
+  };
 
   const { appointments, loading, fetchAppointments } = useDoctorAppointments();
 
@@ -97,7 +105,11 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
         </a>
       </td>
       <td className="px-4 py-4 text-right">
-        <Button size="sm" variant="outline">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => openAppointment(appointment)}
+        >
           View
         </Button>
       </td>
@@ -145,6 +157,13 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
               <Calendar16 />
             </div>
           </div>
+          <AppointmentDetailsDialog
+            isOpen={showDialog}
+            onClose={() => setShowDialog(false)}
+            appointment={selectedAppointment}
+            prescription={prescription}
+            onPrescriptionChange={setPrescription}
+          />
         </>
       )}
     </DashboardLayout>

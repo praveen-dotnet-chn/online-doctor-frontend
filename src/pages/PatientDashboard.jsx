@@ -114,7 +114,7 @@ export default function PatientDashboard({ currentRole, onRoleChange }) {
       </td>
 
       <td className="px-4 py-4 text-sm text-gray-900">
-        {doctor.experience} years
+        {doctor.experience ? doctor.experience + " years" : "-"}
       </td>
       <td className="px-4 py-4 text-right">
         <Button size="sm" onClick={() => startBooking(doctor)}>
