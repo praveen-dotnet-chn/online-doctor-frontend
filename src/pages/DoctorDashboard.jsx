@@ -85,7 +85,8 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
       </td>
 
       <td className="px-4 py-4">{appointment.date}</td>
-      <td className="px-4 py-4">{appointment.time}</td>
+      <td className="px-4 py-4">{appointment.timeRange}</td>
+
       <td className="px-4 py-4">
         <StatusBadge status={appointment.status} />
       </td>

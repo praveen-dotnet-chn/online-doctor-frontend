@@ -68,6 +68,7 @@ export default function Calendar16({ doctorId }) {
             selected={date}
             onSelect={setDate}
             className="bg-transparent p-0"
+            disabled={(day) => day < new Date().setHours(0, 0, 0, 0)}
           />
         </CardContent>
 

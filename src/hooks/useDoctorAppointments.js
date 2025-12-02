@@ -32,14 +32,24 @@ export default function useDoctorAppointments() {
       });
       console.log(patientMap);
       // 4. Normalize data and replace patientId with name
-      const normalized = appointments.map((a) => ({
-        id: a.appointmentId,
-        patientId: a.patientId,
-        patient: patientMap[a.patientId] || "Unknown",
-        date: a.startTime.split("T")[0],
-        time: a.startTime.split("T")[1].split(".")[0],
-        status: a.status,
-      }));
+      const normalized = appointments.map((a) => {
+        const start = new Date(a.startTime);
+        const end = new Date(a.endTime);
+        return {
+          id: a.appointmentId,
+          patientId: a.patientId,
+          patient: patientMap[a.patientId] || "Unknown",
+          date: a.startTime.split("T")[0],
+          // time: a.startTime.split("T")[1].split(".")[0],
+          startTime: start.toTimeString().split(" ")[0], // HH:mm:ss
+          endTime: end.toTimeString().split(" ")[0], //
+          //if you want to show time range, then use this field
+          timeRange: `${start.toTimeString().split(" ")[0]} - ${
+            end.toTimeString().split(" ")[0]
+          }`,
+          status: a.status,
+        };
+      });
 
       setAppointments(normalized);
     } catch (err) {
