@@ -10,6 +10,8 @@ import FullPageLoader from "@/components/ui/full-page-loader";
 import { useTable } from "../hooks/useTable";
 import { useAuth } from "../context/AuthContext";
 import Calendar16 from "../components/calendar-16";
+import { Toast } from "../components/shared/Toast";
+import api from "@/api/api";
 import AppointmentDetailsDialog from "../components/booking/AppointmentDetailsDialog";
 // import { appointmentsData } from "../data/mockData";
 import useDoctorAppointments from "../hooks/useDoctorAppointments";
@@ -22,10 +24,52 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
   const [selectedAppointment, setSelectedAppointment] = React.useState(null);
   const [showDialog, setShowDialog] = React.useState(false);
   const [prescription, setPrescription] = React.useState("");
+  const [videoRoom, setVideoRoom] = React.useState({});
+  const [joinLinks, setJoinLinks] = React.useState({});
+  const [toast, setToast] = React.useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
   const openAppointment = (appt) => {
     setSelectedAppointment(appt);
     setPrescription("");
     setShowDialog(true);
+  };
+  // Create video room for appointment
+  const createRoom = async (appointmentId) => {
+    try {
+      const res = await api.post("/video/create", appointmentId, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      setVideoRoom((prev) => ({ ...prev, [appointmentId]: res.data }));
+      return res.data;
+    } catch (err) {
+      console.error("Room Create Error:", err);
+      showToast("Failed to create room", "error");
+    }
+  };
+  // Generate join link for doctor
+  const generateDoctorLink = async (appointmentId) => {
+    try {
+      const res = await api.post("/video/generate-link", {
+        appointmentId,
+        userId: doctorId,
+        role: "doctor",
+      });
+
+      setJoinLinks((prev) => ({ ...prev, [appointmentId]: res.data.link }));
+      return res.data.link;
+    } catch (err) {
+      console.error("Generate Link Error:", err);
+      showToast("Failed to generate join link", "error");
+    }
   };
 
   const { appointments, loading, fetchAppointments } = useDoctorAppointments();
@@ -33,6 +77,34 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
   React.useEffect(() => {
     fetchAppointments(doctorId);
   }, []);
+  const allowPatient = async (appointmentId) => {
+    try {
+      const res = await api.patch(`/video/allow/${appointmentId}`);
+      showToast("Patient allowed to join!", "success");
+    } catch (err) {
+      console.error("allowPatient error", err);
+      showToast("Unable to allow patient!", "error");
+    }
+  };
+  const handleJoinVideo = async (appointmentId) => {
+    try {
+      // 1. generate doctor link
+      let link =
+        joinLinks[appointmentId] || (await generateDoctorLink(appointmentId));
+      setJoinLinks((prev) => ({ ...prev, [appointmentId]: link }));
+
+      // 2. auto-allow patient
+      await allowPatient(appointmentId);
+
+      // 3. open doctor room
+      window.open(link, "_blank");
+
+      showToast("Patient allowed & room opened", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Unable to start video call", "error");
+    }
+  };
 
   const {
     data,
@@ -81,6 +153,8 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
     { key: "time", label: "Time", sortable: true },
     { key: "status", label: "Status", sortable: false },
     { key: "video link", label: "Video Link" },
+    { key: "create room", label: "Create Room" },
+    { key: "allow", label: "Allow" },
     {
       key: "action",
       label: "Action",
@@ -119,10 +193,37 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
         <StatusBadge status={appointment.status} />
       </td>
       <td className="px-4 py-4">
-        <a href="https://example.com/" className="text-blue-600 underline">
-          Dummy link
-        </a>
+        {videoRoom[appointment.id]?.externalRoomUrl ? (
+          <a
+            href={videoRoom[appointment.id].externalRoomUrl}
+            target="_blank"
+            className="text-blue-600 underline"
+          >
+            Room Created
+          </a>
+        ) : (
+          <span className="text-gray-400">No room</span>
+        )}
       </td>
+
+      <td className="px-4 py-4 text-right">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={async () => {
+            const room = await createRoom(appointment.id);
+            if (room) showToast("Room created!", "success");
+          }}
+        >
+          Create Room
+        </Button>
+      </td>
+      <td className="px-4 py-4 text-right">
+        <Button size="sm" onClick={() => handleJoinVideo(appointment.id)}>
+          Join
+        </Button>
+      </td>
+
       <td className="px-4 py-4 text-right">
         <Button
           size="sm"
@@ -183,6 +284,12 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
             appointment={selectedAppointment}
             prescription={prescription}
             onPrescriptionChange={setPrescription}
+          />
+          <Toast
+            message={toast.message}
+            show={toast.show}
+            type={toast.type}
+            onClose={() => setToast({ show: false, message: "" })}
           />
         </>
       )}

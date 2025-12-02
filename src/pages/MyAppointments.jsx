@@ -23,6 +23,7 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
   const [showPrescriptionDialog, setShowPrescriptionDialog] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [toast, setToast] = React.useState({ show: false, message: "" });
+  const [joinLinks, setJoinLinks] = useState({});
   const { user } = useAuth();
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -163,9 +164,98 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
     setSelectedAppointment(appointment);
     setShowPrescriptionDialog(true);
   };
+  const generatePatientLink = async (appointmentId) => {
+    try {
+      // call generate-link: make sure JSON property names match backend
+      const res = await api.post("/video/generate-link", {
+        AppointmentId: appointmentId,
+        UserId: patientId,
+        Role: "patient",
+      });
 
-  const handleJoinVideo = (videoLink) => {
-    window.open(videoLink, "_blank");
+      const link = res.data?.link;
+      if (!link) throw new Error("No link returned");
+
+      // cache
+      setJoinLinks((p) => ({ ...p, [appointmentId]: link }));
+      return link;
+    } catch (err) {
+      console.error(
+        "generatePatientLink error:",
+        err?.response?.data ?? err.message
+      );
+      showToast("Failed to generate join link", "error");
+      return null;
+    }
+  };
+  const handleJoinVideo = async (appointment) => {
+    if (!appointment) return;
+    try {
+      // get link from cache or generate
+      const linkFromBackend =
+        joinLinks[appointment.id] ||
+        (await generatePatientLink(appointment.id));
+      if (!linkFromBackend) return;
+
+      // convert relative URL to absolute
+      const fullLink = linkFromBackend.startsWith("http")
+        ? linkFromBackend
+        : `${window.location.origin}${linkFromBackend}`;
+
+      const token = new URL(fullLink).searchParams.get("token");
+      if (!token) {
+        window.open(fullLink, "_blank");
+        return;
+      }
+
+      if (!token) {
+        // fallback: open the link directly
+        window.open(link, "_blank");
+        return;
+      }
+
+      // Try to *check* the /video/join response first via API (authenticated)
+      // This will tell us if patient is "waiting" or redirecting to Jitsi.
+      try {
+        const checkRes = await api.get(
+          `/video/join?token=${encodeURIComponent(token)}`
+        );
+
+        // If backend returns waiting JSON: { status: "waiting", message: "..." }
+        if (checkRes.data && checkRes.data.status === "waiting") {
+          showToast(
+            checkRes.data.message || "Please wait for the doctor to admit you",
+            "warning"
+          );
+          return;
+        }
+
+        // If request was redirected by server to external Jitsi, axios usually follows the redirect.
+        // We try to detect final URL returned by the request and open it:
+        const redirectedUrl = checkRes.request?.responseURL;
+        if (
+          redirectedUrl &&
+          redirectedUrl !==
+            `${window.location.origin}/video/join?token=${token}`
+        ) {
+          window.open(redirectedUrl, "_blank");
+          return;
+        }
+
+        // Fallback: open original link in new tab (browser will attempt redirect)
+        window.open(link, "_blank");
+      } catch (err) {
+        // If check GET fails (CORS/redirect issues), fallback to opening link in new tab
+        console.warn(
+          "Could not check join endpoint, falling back to open link:",
+          err?.message ?? err
+        );
+        window.open(link, "_blank");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Unable to start video call", "error");
+    }
   };
 
   // =========================================================
@@ -174,11 +264,14 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
   const renderRow = (appointment) => (
     <tr key={appointment.id} className="hover:bg-gray-50">
       <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
-        <div className="flex items-center">
-          <UserAvatar
-            name={appointment.doctorName}
-            image={appointment.doctorAvatar}
-          />
+        <div className="flex items-center pointer-events-none">
+          <div className="pointer-events-auto">
+            <UserAvatar
+              name={appointment.doctorName}
+              image={appointment.doctorAvatar}
+            />
+          </div>
+
           <div className="ml-3">
             <p className="text-sm font-medium">{appointment.doctorName}</p>
             <p className="text-xs text-gray-500">
@@ -205,7 +298,7 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => handleJoinVideo(appointment.videoLink)}
+            onClick={() => handleJoinVideo(appointment)}
           >
             <Video className="w-4 h-4 mr-2" />
             Join Call
