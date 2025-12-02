@@ -35,10 +35,10 @@ export const SIDEBAR_ITEMS = {
   ],
   [USER_ROLES.DOCTOR]: [
     { icon: "Home", label: "Dashboard", path: "/doctor" },
-    { icon: "Calendar", label: "Appointments", path: "/appointments" },
-    { icon: "Users", label: "Patients", path: "/patients" },
-    { icon: "FileText", label: "Prescriptions", path: "/prescriptions" },
-    { icon: "Settings", label: "Settings", path: "/settings" },
+    // { icon: "Calendar", label: "Appointments", path: "/appointments" },
+    // { icon: "Users", label: "Patients", path: "/patients" },
+    // { icon: "FileText", label: "Prescriptions", path: "/prescriptions" },
+    { icon: "Settings", label: "Settings", path: "/#" },
   ],
   [USER_ROLES.ADMIN]: [
     { icon: "Home", label: "Dashboard", path: "/admin" },

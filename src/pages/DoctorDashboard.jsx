@@ -174,7 +174,7 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
 
             {/* RIGHT SIDE (Calendar spans height of both filter + table) */}
             <div className="lg:row-span-2">
-              <Calendar16 />
+              <Calendar16 doctorId={user.userId} />
             </div>
           </div>
           <AppointmentDetailsDialog
