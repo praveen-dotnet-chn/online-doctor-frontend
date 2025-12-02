@@ -53,11 +53,11 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
 
   const stats = [
     { label: "Total Appointments", value: appointments.length },
-    {
-      label: "Today",
-      value: appointments.filter((a) => a.date === "2025-11-28").length,
-      color: "text-blue-600",
-    },
+    // {
+    //   label: "Today",
+    //   value: appointments.filter((a) => a.date === "2025-11-28").length,
+    //   color: "text-blue-600",
+    // },
     {
       label: "Completed",
       value: appointments.filter((a) => a.status === "completed").length,

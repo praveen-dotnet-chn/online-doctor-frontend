@@ -12,7 +12,6 @@ export const Sidebar = ({ isOpen, onClose, onNavigate }) => {
 
   // STATE for Logout Dialog
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-
   const currentRole = user?.role;
   const menuItems = SIDEBAR_ITEMS[currentRole] || [];
 

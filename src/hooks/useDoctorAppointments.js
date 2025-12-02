@@ -13,7 +13,7 @@ export default function useDoctorAppointments() {
       const res = await api.get(`/api/patient/appointments/doctor/${doctorId}`);
 
       const appointments = res.data;
-
+      console.log("Fetched appointments:", appointments);
       // 1. Extract unique patientIds
       const patientIds = [...new Set(appointments.map((a) => a.patientId))];
 
@@ -30,7 +30,7 @@ export default function useDoctorAppointments() {
         const p = res.data;
         patientMap[p.userId] = `${p.firstName} ${p.lastName}`;
       });
-      console.log(patientMap);
+      // console.log(patientMap);
       // 4. Normalize data and replace patientId with name
       const normalized = appointments.map((a) => {
         const start = new Date(a.startTime);
@@ -39,6 +39,7 @@ export default function useDoctorAppointments() {
           id: a.appointmentId,
           patientId: a.patientId,
           patient: patientMap[a.patientId] || "Unknown",
+          reason: a.reason,
           date: a.startTime.split("T")[0],
           // time: a.startTime.split("T")[1].split(".")[0],
           startTime: start.toTimeString().split(" ")[0], // HH:mm:ss
