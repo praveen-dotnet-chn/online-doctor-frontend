@@ -65,6 +65,7 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
     { key: "date", label: "Date", sortable: true },
     { key: "time", label: "Time", sortable: true },
     { key: "status", label: "Status", sortable: false },
+    { key: "video link", label: "Video Link" },
     {
       key: "action",
       label: "Action",
@@ -89,6 +90,11 @@ export default function DoctorDashboard({ currentRole, onRoleChange }) {
 
       <td className="px-4 py-4">
         <StatusBadge status={appointment.status} />
+      </td>
+      <td className="px-4 py-4">
+        <a href="https://example.com/" className="text-blue-600 underline">
+          Dummy link
+        </a>
       </td>
       <td className="px-4 py-4 text-right">
         <Button size="sm" variant="outline">
