@@ -39,7 +39,11 @@ export const DoctorProfileDialog = ({
               <div className="flex items-start space-x-4">
                 <UserAvatar
                   name={doctor.name}
-                  image={doctor.avatar}
+                  image={
+                    doctor?.photo
+                      ? `data:image/png;base64,${doctor.photo}`
+                      : null
+                  }
                   size="xlarge"
                 />
                 <div className="flex-1">

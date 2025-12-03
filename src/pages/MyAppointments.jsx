@@ -45,7 +45,7 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
           appts.map(async (apt) => {
             const doc = await api.get(`/api/doctors/${apt.doctorId}`);
             const doctor = doc.data;
-
+            // console.log("Fetched Doctor for appointment:", doctor);
             return {
               id: apt.appointmentId,
               doctorId: apt.doctorId,
@@ -53,6 +53,7 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
               doctorAvatar: null,
               specialization: doctor.specialization,
               experience: doctor.experience,
+              photo: doctor.photo,
               appointmentDate: new Date(apt.startTime).toLocaleDateString(),
               appointmentTime: `${new Date(apt.startTime).toLocaleTimeString(
                 [],
@@ -164,6 +165,7 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
     setSelectedAppointment(appointment);
     setShowPrescriptionDialog(true);
   };
+
   const generatePatientLink = async (appointmentId) => {
     try {
       // call generate-link: make sure JSON property names match backend
@@ -174,6 +176,7 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
       });
 
       const link = res.data?.link;
+      console.log("Generated patient link:", link);
       if (!link) throw new Error("No link returned");
 
       // cache
@@ -189,12 +192,15 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
     }
   };
   const handleJoinVideo = async (appointment) => {
+    // console.log("Joining video for appointment:", appointment);
     if (!appointment) return;
     try {
       // get link from cache or generate
       const linkFromBackend =
         joinLinks[appointment.id] ||
         (await generatePatientLink(appointment.id));
+      console.log("Join link from backend:", linkFromBackend);
+      window.open("http://localhost:5002" + linkFromBackend, "_blank");
       if (!linkFromBackend) return;
 
       // convert relative URL to absolute
@@ -268,7 +274,11 @@ export const MyAppointments = ({ currentRole, onRoleChange }) => {
           <div className="pointer-events-auto">
             <UserAvatar
               name={appointment.doctorName}
-              image={appointment.doctorAvatar}
+              image={
+                appointment.photo
+                  ? `data:image/png;base64,${appointment.photo}`
+                  : null
+              }
             />
           </div>
 

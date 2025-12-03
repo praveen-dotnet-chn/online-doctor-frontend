@@ -15,11 +15,11 @@ export default function useDoctors() {
         id: d.userId,
         name: `${d.firstName} ${d.lastName}`,
         specialization: d.specialization,
-        experience: d.experience
+        experience: d.experience,
+        photo: d.photo || null,
       }));
 
       setDoctors(normalized);
-
     } finally {
       setLoading(false);
     }

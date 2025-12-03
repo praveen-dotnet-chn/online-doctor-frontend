@@ -29,7 +29,7 @@ export const SIDEBAR_ITEMS = {
   [USER_ROLES.PATIENT]: [
     { icon: "Home", label: "Dashboard", path: "/patient" },
     { icon: "Calendar", label: "My Appointments", path: "/my-appointments" },
-    { icon: "FileText", label: "Medical Records", path: "/records" },
+    // { icon: "FileText", label: "Medical Records", path: "/records" },
     { icon: "User", label: "Profile", path: "/profile" },
     // { icon: "Settings", label: "Settings", path: "/settings" },
   ],
@@ -38,7 +38,8 @@ export const SIDEBAR_ITEMS = {
     // { icon: "Calendar", label: "Appointments", path: "/appointments" },
     // { icon: "Users", label: "Patients", path: "/patients" },
     // { icon: "FileText", label: "Prescriptions", path: "/prescriptions" },
-    { icon: "Settings", label: "Settings", path: "/#" },
+    { icon: "User", label: "Profile", path: "/doctor/profile" },
+    // { icon: "Settings", label: "Settings", path: "/#" },
   ],
   [USER_ROLES.ADMIN]: [
     { icon: "Home", label: "Dashboard", path: "/admin" },

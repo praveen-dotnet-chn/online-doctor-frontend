@@ -101,7 +101,12 @@ export default function PatientDashboard({ currentRole, onRoleChange }) {
     <tr key={doctor.id} className="hover:bg-gray-50">
       <td className="sticky left-0 z-10 bg-white px-4 py-4 whitespace-nowrap">
         <div className="flex items-center">
-          <UserAvatar name={doctor.name} />
+          <UserAvatar
+            name={doctor.name}
+            image={
+              doctor?.photo ? `data:image/png;base64,${doctor.photo}` : null
+            }
+          />
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-900">{doctor.name}</p>
           </div>

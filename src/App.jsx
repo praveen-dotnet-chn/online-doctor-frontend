@@ -10,6 +10,7 @@ import GuestRoute from "@/components/routes/GuestRoute";
 import FullPageLoader from "@/components/ui/full-page-loader";
 import { MyAppointments } from "./pages/MyAppointments";
 import { useContext } from "react";
+import PatientProfile from "./pages/PatientProfile";
 
 function AppContent() {
   const { loading } = useContext(AuthContext);
@@ -39,11 +40,20 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/my-appointments"
         element={
           <ProtectedRoute roles={["patient"]}>
             <MyAppointments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute roles={["patient"]}>
+            <PatientProfile />
           </ProtectedRoute>
         }
       />
@@ -53,6 +63,14 @@ function AppContent() {
         element={
           <ProtectedRoute roles={["doctor"]}>
             <DoctorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor/profile"
+        element={
+          <ProtectedRoute roles={["doctor"]}>
+            <PatientProfile />
           </ProtectedRoute>
         }
       />

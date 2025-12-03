@@ -9,7 +9,7 @@ import { useLocation } from "react-router-dom";
 export const Sidebar = ({ isOpen, onClose, onNavigate }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
-
+  // console.log("Sidebar user photo:", user);
   // STATE for Logout Dialog
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const currentRole = user?.role;
@@ -74,6 +74,9 @@ export const Sidebar = ({ isOpen, onClose, onNavigate }) => {
               <UserAvatar
                 name={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()}
                 email={user?.email}
+                image={
+                  user?.photo ? `data:image/png;base64,${user.photo}` : null
+                }
               />
 
               <div className="flex-1 min-w-0">
